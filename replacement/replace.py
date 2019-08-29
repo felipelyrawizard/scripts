@@ -18,10 +18,18 @@ def substituir(Dir, velho, novo):
     for root, directories, filenames in os.walk(Dir):
         for filename in filenames:
             print(os.path.join(root,filename))
-            with fileinput.FileInput(os.path.join(root,filename), inplace=True, backup='') as file:
-                for line in file:
-                    print(line.replace(velho, novo), end='')
-            file.close()
+            f = open(os.path.join(root,filename), 'r',encoding="utf8")
+            filedata = f.read()
+            f.close()
+            newdata = filedata.replace(velho, novo)
+            f = open(os.path.join(root,filename), 'w',encoding="utf8")
+            f.write(newdata)
+            f.close()
+
+            #with fileinput.FileInput(os.path.join(root,filename), inplace=True, backup='',bufsize=290000) as file:
+            #    for line in file:
+            #        print(line.replace(velho, novo), end='')
+            #file.close()
 
 
 ###PRINCIPAL####
@@ -29,6 +37,7 @@ def substituir(Dir, velho, novo):
 de,para = retorna_depara("de_para.csv")
 Dir = input("Diretorio:")
 os.chdir(Dir)
+
 for i in range(len(de)):
     print("Atualizando de "+de[i] +" para "+para[i])
     substituir(Dir, de[i], para[i])
