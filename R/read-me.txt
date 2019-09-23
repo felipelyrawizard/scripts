@@ -1,0 +1,1 @@
+Pasta que contem scripts de teste da linguagem R.
