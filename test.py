@@ -17,4 +17,4 @@ def one_line_combinations():
     print(numbers)
 
 #four_digit_combinations()
-#one_line_combinations()
+one_line_combinations()

@@ -18,11 +18,11 @@ def substituir(Dir, velho, novo):
     for root, directories, filenames in os.walk(Dir):
         for filename in filenames:
             print(os.path.join(root,filename))
-            f = open(os.path.join(root,filename), 'r',encoding="utf8")
+            f = open(os.path.join(root,filename), 'r',encoding="utf8") #retirar encoding quando exec em linux
             filedata = f.read()
             f.close()
             newdata = filedata.replace(velho, novo)
-            f = open(os.path.join(root,filename), 'w',encoding="utf8")
+            f = open(os.path.join(root,filename), 'w',encoding="utf8") #retirar encoding quando exec em linux
             f.write(newdata)
             f.close()
 
