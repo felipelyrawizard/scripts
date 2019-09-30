@@ -72,5 +72,35 @@ q + geom_line(size=1) + geom_point()
 #mappig vs setting
 
 
+# histograms and density
+
+s <- ggplot(data=movies, aes(x=BudgetMillions))
+s + geom_histogram(binwidth=10)
+
+# add colour
+s + geom_histogram(binwidth=10,aes(fill=Genre),colour="Black")
+
+#density
+s + geom_density(aes(fill=Genre))
+s + geom_density(aes(fill=Genre),position="stack")
+
+
+#-------- layer tips --------
+
+t <-ggplot(data=movies, aes(x=AudienceRating))
+t + geom_histogram(binwidth=10,
+                   fill="White",colour="Blue")
+
+# outro eito, nao precisa recriar a variavel alterando x
+t <-ggplot(data=movies) # sem o aes
+
+t + geom_histogram(binwidth=10,
+                   aes(x=AudienceRating),
+                   fill="White",colour="Blue")
+
+t + geom_histogram(binwidth=10,
+                   aes(x=CriticRating),
+                   fill="White",colour="Blue")
+
 
 
