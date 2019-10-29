@@ -103,4 +103,77 @@ t + geom_histogram(binwidth=10,
                    fill="White",colour="Blue")
 
 
+#24/10/2019
+# statistical transformation
+
+q <- ggplot(data=movies, aes(x=CriticRating, 
+                             y=AudienceRating,
+                             colour=Genre))
+q + geom_point() + geom_smooth(fill=NA)
+
+#boxplots
+q <- ggplot(data=movies, aes(x=Genre, 
+                             y=AudienceRating,
+                             colour=Genre))
+q + geom_boxplot(size=1.2)
+
+q + geom_boxplot(size=1.2) + geom_point()
+
+# jitter (ajuda a ver a quantidade de pontos naquela combinacao)
+q + geom_boxplot(size=1.2) + geom_jitter()
+
+
+# facets
+
+v <- ggplot(data=movies, aes(x=BudgetMillions))
+v + geom_histogram(binwidth=10, aes(fill=Genre),colour="Black") + facet_grid(Genre~.,scales="free")
+
+
+#scatterplots
+
+w <- ggplot(data=movies, aes(x=CriticRating, 
+                                 y=AudienceRating,
+                                 colour=Genre))
+w + geom_point(size=3) + facet_grid(Genre~.)
+w + geom_point(size=3) + facet_grid(Year~.)
+w + geom_point(size=3) + facet_grid(Genre~Year) + geom_smooth()
+
+
+# limits and zoom
+
+m <- ggplot(data=movies, aes(x=CriticRating, 
+                             y=AudienceRating,
+                             size=BudgetMillions,
+                             colour=Genre))
+m + geom_point()
+# ok, quero so apresentar uma parte - corta o grafico e da zoom
+m + geom_point() + xlim(50,100) + ylim(50,100)
+
+
+#------ themes
+
+v <- ggplot(data=movies, aes(x=BudgetMillions))
+h <- v + geom_histogram(binwidth=10, aes(fill=Genre),colour="Black")
+
+h
+
+#axes labels
+h + 
+  xlab("Money Axis") +
+  ylab("Number of Movies") +
+  ggtitle("Movie Budget Distribution") +
+  theme(axis.title.x = element_text(colour="DarkGreen",size=30),
+        axis.title.y = element_text(colour="Red",size=30),
+        axis.text.x = element_text(size=15),
+        axis.text.y = element_text(size=15),
+        legend.title = element_text(size=20),
+        legend.text = element_text(size=15),
+        legend.position = c(1,1),
+        legend.justification = c(1,1),
+        
+        plot.title =  element_text(colour="DarkBlue",size=40,family = "Courier")
+        )
+
+
+
 
