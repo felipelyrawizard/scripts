@@ -91,3 +91,37 @@ list_rl1[4]
 list_rl1$Data <- RL1
 list_rl1
 summary(list_rl1)
+
+
+
+
+
+
+#############################################
+#############################################
+getwd()
+Chicago <- read.csv("Chicago-F.csv", row.names=1)
+NewYork <- read.csv("NewYork-F.csv", row.names=1)
+Houston <- read.csv("Houston-F.csv", row.names=1)
+SanFrancisco <- read.csv("SanFrancisco-F.csv", row.names=1)
+
+?apply
+
+Chicago
+
+# average for every row
+apply(Chicago,1,mean)
+
+apply(Chicago,1,max)
+
+apply(Chicago,1,min)
+
+#max or min iin the columns
+apply(Chicago,2,max)
+apply(Chicago,2,min)
+
+#comparando:
+apply(Chicago,1,mean)
+apply(NewYork,1,mean)
+apply(Houston,1,mean)
+apply(SanFrancisco,1,mean)
