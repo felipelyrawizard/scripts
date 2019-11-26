@@ -125,3 +125,100 @@ apply(Chicago,1,mean)
 apply(NewYork,1,mean)
 apply(Houston,1,mean)
 apply(SanFrancisco,1,mean)
+
+?lapply
+Chicago
+t(Chicago) #transpose (alterar linhas em colunas)
+
+#criando uma lista com nomes iguais
+Weather <- list(Chicago=Chicago,NewYork=NewYork,Houston=Houston,SanFrancisco=SanFrancisco)
+Weather[3]
+Weather[[3]]
+Weather$Houston
+
+#transpor 
+lapply(Weather, t) # transposar cada elemento da lista
+# a mesma coisa de t(Weather$Chicago),t(Weather$NewYoork),....  
+mynewlist <- lapply(Weather, t)
+
+#adicionando uma nova linha 
+lapply(Weather,rbind,NewRow=1:12)
+
+#calcula o mean de todas as linhas
+rowMeans(Chicago) # igual a apply(Chicago,1,mean)
+lapply(Weather, rowMeans)
+
+#rowMeans
+#colMeans
+#rowSums
+#colSums
+Weather
+# o primeiro item da primeira linha de cada cidade
+lapply(Weather,"[",1,1)
+
+#as primeiras linhas de cada cidade
+lapply(Weather,"[",1,)
+
+#pegar a coluna de março
+lapply(Weather,"[",,3)
+
+# adicionando as proprias funcoes
+lapply(Weather,rowMeans)
+
+lapply(Weather,function(x)x[1,]) # a primeira linha de todas as matrizes
+lapply(Weather,function(x)x[,12]) # a 12 coluna de todas as matrizes
+
+Weather
+lapply(Weather,function(z)z[1,]-z[2,])
+
+#sapply (versão simplificada) # apresentação em matriz
+lapply(Weather,"[",1,1)
+sapply(Weather,"[",1,1)
+
+# AvgHigh_F para 4# quarter
+lapply(Weather,"[",1,10:12)
+sapply(Weather,"[",1,10:12)
+
+
+lapply(Weather,rowMeans)
+sapply(Weather,rowMeans)
+
+round(sapply(Weather,rowMeans),2)
+#não dá para usar o round pois nao é uma matriz
+round(lapply(Weather,rowMeans),2)
+
+lapply(Weather,function(z)z[1,]-z[2,])
+sapply(Weather,function(z)z[1,]-z[2,])
+
+# a proposito:
+# simplify = FALSE fica igual lapply
+sapply(Weather,rowMeans,simplify = FALSE)
+
+#
+#Nesting Apply functions
+#
+
+# apply: iterate over rows of the matrix,
+# lapply or sapply: iterate over components of the list
+apply(Chicago,1,max)
+
+# apply across whole list
+lapply(Weather,apply,1,max)
+lapply(Weather, function(x) apply(x,1,max))
+sapply(Weather,apply,1,max)
+
+
+#very advanced tutorial!
+#which.max
+?which.max #Where is the Min() or Max() or first TRUE or FALSE ?
+
+Chicago[1,]
+which.max(Chicago[1,]) # vai trazer o indice
+names(which.max(Chicago[1,])) # so traz o nome da coluna
+
+# apply: iterate over rows 
+# o máximo de cada linha, vai trazer a coluna
+apply(Chicago,1,function(x) names(which.max(x)))
+
+# por todas as cidades
+lapply(Weather, function(y) apply(y,1,function(x) names(which.max(x))))
