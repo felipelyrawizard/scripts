@@ -43,11 +43,11 @@ q <- ggplot(data=freq, aes(x=number,
 q + geom_point() + geom_text(aes(label=number),hjust=0, vjust=0)
 
 #freq de n. primos
-primes <<- c(2,3,5,7,11,13,17,19,23)
+primes <- c(2,3,5,7,11,13,17,19,23)
 #par ou impar
-pair <<- c(2,4,6,8,10,12,14,16,18,20,22,24)
+pairs <- c(2,4,6,8,10,12,14,16,18,20,22,24)
 
-odds <<- c(1,3,5,7,9,11,13,15,17,19,21,23,25)
+odds <- c(1,3,5,7,9,11,13,15,17,19,21,23,25)
 
 indicadores <- data.frame()
 for (row in 1:nrow(planilha)){
@@ -60,7 +60,7 @@ for (row in 1:nrow(planilha)){
     if (value %in% odds){
       o <- o+1
     }
-    if (value %in% pair){
+    if (value %in% pairs){
       p <- p+1
     }
     if (value %in% primes){
@@ -89,6 +89,15 @@ sapply(names(indicadores)[-1], function(x) {
 })
 
 planilha <- merge(x = planilha, y = indicadores, by.x = "Concurso", by.y = "Concurso", all.x = TRUE)
+
+# analises:
+# ultimos 10:
+# nao lancar palpite que seja igual ao historico, pois o mesmo jogo nunca saiu e nunca sairá (observação inconclusiva, porém está funcionando até hoje)
+# lancar palpite observando os ultimos 10 registros, o palpite deve ser validado pelo maximo de minimo de pares, impares e primos 
+# observar se o ultimo registro tem pico (primo, par ou impar): 
+                                   #se o ultimo for normal, aumentar o range para chance de pico;
+                                   #se o ultimo for um pico, após este pico o proximo deverá ser normal.
+# realizar treino e teste com machine learning para induzir as jogadas que deram certo.
 
 
 graph_prime <- ggplot(data=planilha, aes(x=Concurso, y=qt_primes)) +
@@ -138,4 +147,7 @@ for (row in 1:nrow(planilha)){
   game <- as.vector(planilha[1,3:17])
   game <- as.vector(game[order(game)])
 }
+
+
+
 
