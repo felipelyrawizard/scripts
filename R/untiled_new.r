@@ -64,3 +64,25 @@ existe_historco(nada)
 
 nada
 lista[row,1:15]
+
+
+
+# the last 10
+last_10 <- planilha %>% 
+  select(Concurso,Bola1:Bola15) %>%
+  arrange(desc(Concurso)) %>%
+  left_join(lista) %>%
+  head(10) %>%
+  select (-Concurso)
+
+#ultimos 10:
+  #5 q mais sairam
+  #5 q não sairam ou sairam menos
+  #soma, fibo, primos
+
+# ultimo 1
+  #soma, fibo, primos
+
+# ultimo 1 compara com ultimos 10
+  # se é mais alto comparado com a media ou mais baixo
+
