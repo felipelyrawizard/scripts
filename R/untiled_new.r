@@ -1,93 +1,152 @@
-tenta <- gen_lotto()
-nada <- as.data.frame(t(tenta))
-colnames(nada) <- c("Bola1","Bola2","Bola3","Bola4","Bola5","Bola6","Bola7",
-                    "Bola8","Bola9","Bola10","Bola11","Bola12","Bola13","Bola14","Bola15")
+setwd("C:/felipe/")
+getwd()
+library (openxlsx)
+planilha <- read.xlsx ("d_lot.xlsx", sheet = "d_lot", startRow = 1, colNames = TRUE)
 
-lista <- data.frame()
+planilha <- planilha[complete.cases(planilha$Bola1),]
+str(planilha)
+
+length(which(planilha$Bola1 == i))
+
+freq <- data.frame()
+
+for (i in 1:25){
+  print (i)
+  c <- 0
+  c <- c + length(which(planilha$Bola1 == i))
+  c <- c + length(which(planilha$Bola2 == i))
+  c <- c + length(which(planilha$Bola3 == i))
+  c <- c + length(which(planilha$Bola4 == i))
+  c <- c + length(which(planilha$Bola5 == i))
+  c <- c + length(which(planilha$Bola6 == i))
+  c <- c + length(which(planilha$Bola7 == i))
+  c <- c + length(which(planilha$Bola8 == i))
+  c <- c + length(which(planilha$Bola9 == i))
+  c <- c + length(which(planilha$Bola10 == i))
+  c <- c + length(which(planilha$Bola11 == i))
+  c <- c + length(which(planilha$Bola12 == i))
+  c <- c + length(which(planilha$Bola13 == i))
+  c <- c + length(which(planilha$Bola14 == i))
+  c <- c + length(which(planilha$Bola15 == i))
+  print (c)
+  freq <- rbind(freq,c(i,c))
+}
+
+colnames(freq) <- c("number","freq")
+
+library (ggplot2)
+q <- ggplot(data=freq, aes(x=number, 
+                           y=freq,
+                           colour=number,
+                           size=freq))
+# add geom layer
+q + geom_point() + geom_text(aes(label=number),hjust=0, vjust=0)
+
+#freq de n. primos
+primes <- c(2,3,5,7,11,13,17,19,23)
+#par ou impar
+pairs <- c(2,4,6,8,10,12,14,16,18,20,22,24)
+
+odds <- c(1,3,5,7,9,11,13,15,17,19,21,23,25)
+
+indicadores <- data.frame()
 for (row in 1:nrow(planilha)){
   game <- as.vector(planilha[row,3:17])
-  nada <- as.vector(game[order(game)])
-  colnames(nada) <- c("Bola1","Bola2","Bola3","Bola4","Bola5","Bola6","Bola7",
-                      "Bola8","Bola9","Bola10","Bola11","Bola12","Bola13","Bola14","Bola15")
-  nada <- as.data.frame(nada)
-  lista <- rbind(lista,nada)
-}
-
-lista
-#reordenar indice da lista
-rownames(lista) <- 1 : length(rownames(lista))
-verificacao <- data.frame()
-# verificar se ja existe na lista (mais de uma vez)
-for (row in 1:nrow(lista)){
-  
-  atual <- lista[row,1:15]
-  #print (atual)
-  outros <- lista %>% slice(-row)
-  #print (outros)
-  # verificacao se esta funcionando
-  outros <- atual
-  #verificacao <- rbind(verificacao,atual %in% outros)
-  for(i in atual %in% outros){
-    if(i == TRUE)
-      print('lista ja existe')
-      existe <- TRUE
-      break
-  }
-}
-
-head(atual)
-head(outros)
-tail(outros)
-
-head(lista)
-tail(lista)
-verificacao
-
-existe_historco <- function(pal){
-  
-    atual <- as.data.frame(pal)
-    existe <- FALSE
-    
-    for(i in 1:nrow(lista)){
-      if(all(atual == lista[i,]) == TRUE){
-        print('lista ja existe')
-        existe <- TRUE
-        break
-      }  
+  conc <- planilha[row,1]
+  o <- 0
+  p <- 0
+  pr <- 0
+  for (value in game) {
+    if (value %in% odds){
+      o <- o+1
     }
-    return(existe)
+    if (value %in% pairs){
+      p <- p+1
+    }
+    if (value %in% primes){
+      pr <- pr+1
+    }
+  }
+  game <- append(game,o)
+  game <- append(game,p)
+  game <- append(game,pr)
+  game <- append(game,conc)
+  
+  game <- as.data.frame(game)
+  colnames(game)[16] <- "qt_odds"
+  colnames(game)[17] <- "qt_pairs"
+  colnames(game)[18] <- "qt_primes"
+  colnames(game)[19] <- "Concurso"
+  indicadores <- rbind(indicadores,game)
 }
 
 
-# se ja existe na lista
-existe_historco(nada)
+indicadores <- indicadores[,c("Concurso","qt_pairs","qt_odds","qt_primes")]
 
-nada
-lista[row,1:15]
+# adicao de campos - porcentagem dos itens em relacao ao todo
+sapply(names(indicadores)[-1], function(x) {
+  indicadores[paste(x, "_pct")] <<- indicadores[x] / 15 # bolas
+})
 
+planilha <- merge(x = planilha, y = indicadores, by.x = "Concurso", by.y = "Concurso", all.x = TRUE)
 
-
-# the last 10
-last_10 <- planilha %>% 
-  select(Concurso,Bola1:Bola15) %>%
-  arrange(desc(Concurso)) %>%
-  left_join(lista) %>%
-  head(10) %>%
-  select (-Concurso)
-
-#ultimos 10:
-  #5 q mais sairam
-  #5 q não sairam ou sairam menos
-  #soma, fibo, primos
-
-# ultimo 1
-  #soma, fibo, primos
-
-# ultimo 1 compara com ultimos 10
-  # se é mais alto comparado com a media ou mais baixo
+# analises:
+# ultimos 10:
+# nao lancar palpite que seja igual ao historico, pois o mesmo jogo nunca saiu e nunca sairá (observação inconclusiva, porém está funcionando até hoje)
+# lancar palpite observando os ultimos 10 registros, o palpite deve ser validado pelo maximo de minimo de pares, impares e primos 
+# observar se o ultimo registro tem pico (primo, par ou impar): 
+#se o ultimo for normal, aumentar o range para chance de pico;
+#se o ultimo for um pico, após este pico o proximo deverá ser normal.
+# realizar treino e teste com machine learning para induzir as jogadas que deram certo.
 
 
+graph_prime <- ggplot(data=planilha, aes(x=Concurso, y=qt_primes)) +
+  geom_bar(stat="identity", fill="steelblue")+
+  geom_text(aes(label=qt_primes), vjust=-0.3, size=3.5)+
+  theme_minimal()
 
+graph_prime <- graph_prime + coord_cartesian(xlim=c(1850,1888))
+
+
+graph_odd <- ggplot(data=planilha, aes(x=Concurso, y=qt_odds)) +
+  geom_bar(stat="identity", fill="red")+
+  geom_text(aes(label=qt_odds), vjust=-0.3, size=3.5)+
+  theme_minimal()
+
+graph_odd <- graph_odd + coord_cartesian(xlim=c(1850,1888))
+
+graph_pair <- ggplot(data=planilha, aes(x=Concurso, y=qt_pairs)) +
+  geom_bar(stat="identity", fill="blue")+
+  geom_text(aes(label=qt_pairs), vjust=-0.3, size=3.5)+
+  theme_minimal()
+
+graph_pair <- graph_pair + coord_cartesian(xlim=c(1850,1888))
+
+library(ggpubr)
+ggarrange(graph_prime, 
+          ggarrange(graph_odd, graph_pair, ncol = 2, labels = c("Odds", "Pairs")), 
+          labels = c("Primes"),
+          nrow = 2)
+
+
+gen_lotto<-function(){
+  balls<-seq(1:25)
+  probs<-balls
+  # We need 15 whites
+  w<-sample(balls,15,prob=probs)
+  w <- as.data.frame(w[order(w)])
+  # Print results
+  print(w)
+  return(w)
+}
+
+
+tenta <- gen_lotto()
+
+for (row in 1:nrow(planilha)){
+  game <- as.vector(planilha[1,3:17])
+  game <- as.vector(game[order(game)])
+}
 
 lista <- planilha %>% select (Data.Sorteio,Bola1:Bola15)
 lista$Data.Sorteio <- convertToDate(lista$Data.Sorteio)
@@ -101,7 +160,7 @@ library(xts)
 
 # predicao de duas formas:
 # 1 - sem ordenacao das sequencias 
-
+# 2 - com ordenacao das sequencias 
 
 #We convert dataset as prophet input requires
 df_ts <- xts(lista$Bola1,order.by=lista$Data.Sorteio)
@@ -194,18 +253,55 @@ dygraph(prediction_yhat,ylab="Previsão yhat",
   dySeries("V1",label="Bola") %>%
   dyRangeSelector(dateWindow = c("2019-06-01","2019-11-19"))
 
- ball_pred <- forecastprophet %>% 
+ball_pred <- forecastprophet %>% 
               slice(n()) %>% 
               select(yhat)
 
-# preciso multiplicar isso
-teste <- lista_ordenada %>% select(Bola1,Data.Sorteio)
+ball_pred
 
-# loop entre colunas do df
-for(i in names(lista_ordenada %>% select(Bola1:Bola15))){
+#
+# PREVISAO DE TODOS OS 15
+#
+# loop entre colunas do df, criar um data frame com cada coluna
+
+predicao_custom <- function(lista_bola){
   
-  teste <- lista_ordenada %>% select(Bola1,Data.Sorteio)
+  colnames(lista_bola)[1] <- "Bola"
+  df_ts <- xts(lista_bola$Bola,order.by=lista_bola$Data.Sorteio)
+  
+  df <- data.frame(ds = index(df_ts),
+                   y = as.numeric(df_ts[,1]))
+  
+  #prophet model application
+  prophetpred <- prophet(df)
+  future <- make_future_dataframe(prophetpred, periods = 1)
+  
+  forecastprophet <- predict(prophetpred, future)
+  forecastprophet$yhat <- round(forecastprophet$yhat,digits=0)
+  
+  ball_pred <- forecastprophet %>% 
+    slice(n()) %>% 
+    select(yhat)
+  return(ball_pred)
   
 }
 
 
+previsao_profeta <- data.frame()
+for(i in names(lista_ordenada %>% select(Bola1:Bola15))){
+  
+  ball_pred <- predicao_custom(assign(paste('df_',i,sep=''), lista_ordenada %>% select(i,Data.Sorteio)))
+  
+  previsao_profeta <- rbind(previsao_profeta,ball_pred)
+}
+
+
+previsao_profeta2 <- data.frame()
+for(i in names(lista %>% select(Bola1:Bola15))){
+  
+  ball_pred <- predicao_custom(assign(paste('df_',i,sep=''), lista %>% select(i,Data.Sorteio)))
+  
+  previsao_profeta2 <- rbind(previsao_profeta2,ball_pred)
+}
+
+previsao_profeta2 <- previsao_profeta2 %>% arrange(yhat)
