@@ -305,3 +305,50 @@ for(i in names(lista %>% select(Bola1:Bola15))){
 }
 
 previsao_profeta2 <- previsao_profeta2 %>% arrange(yhat)
+
+
+
+
+
+# http://www.sthda.com/english/articles/40-regression-analysis/166-predict-in-r-model-predictions-and-confidence-intervals/
+
+
+# We start by building a simple linear regression model that predicts the stopping distances of cars on the basis of the speed.
+# stopping distance for speed value
+# the units of the variable speed and dist are respectively, mph and ft.
+
+# Load the data
+data("cars", package = "datasets")
+# Build the model
+model <- lm(dist ~ speed, data = cars)
+
+# The linear model equation can be written as follow: dist = -17.579 + 3.932*speed.
+model
+
+#então, 25mph --> 85 ft para parar
+# mais ou menos 40kmh, são 25 metros para parar
+# mais ou menos né: é um modelo linear
+-17.579 + 3.932*25 #era para dar 85... deu 80
+-17.579 + 3.932*12 # outros testes
+
+new.speeds <- data.frame(speed = c(12, 19, 24))
+
+new.speeds
+
+predicao <- data.frame(predict(model, newdata = new.speeds))
+predicao
+
+# 0. Build linear model 
+data("cars", package = "datasets")
+model <- lm(dist ~ speed, data = cars)
+# 1. Add predictions 
+pred.int <- predict(model, interval = "prediction")
+mydata <- cbind(cars, pred.int)
+# 2. Regression line + confidence intervals
+library("ggplot2")
+p <- ggplot(mydata, aes(speed, dist)) +
+  geom_point() +
+  stat_smooth(method = lm)
+# 3. Add prediction intervals
+p + geom_line(aes(y = lwr), color = "red", linetype = "dashed")+
+  geom_line(aes(y = upr), color = "red", linetype = "dashed")
