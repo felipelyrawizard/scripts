@@ -307,6 +307,17 @@ for(i in names(lista %>% select(Bola1:Bola15))){
 previsao_profeta2 <- previsao_profeta2 %>% arrange(yhat)
 
 
+previsao_profeta
+previsao_profeta2
+palpite  <- unique(previsao_profeta)
+palpite2 <- unique(previsao_profeta2)
+palpites <- data.frame(t(palpite))
+palpites$X15 <- NA
+
+palpites <- bind_rows(palpites,data.frame(t(palpite2)))
+#reordenando um coluna
+palpites = palpites %>% select(X1:X9, X10, X11:X15)
+palpites
 
 
 
