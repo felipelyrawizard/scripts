@@ -1,15 +1,46 @@
 
+
 nullToNA <- function(x) {
   x[sapply(x, is.null)] <- NA
   return(x)
 }
 
 url_m <- "http://api.bitcoincharts.com/v1/markets.json"
+
+repeat{
+Sys.sleep(30)
 mkt_data <- fromJSON(url_m)
-str(mkt_data)
+#str(mkt_data)
 mkt_data2 <- lapply(mkt_data,nullToNA)
 mkt_df <- do.call(rbind,lapply(mkt_data2,data.frame,stringsAsFactors=FALSE))
-head(mkt_df)
+#head(mkt_df)
+
+teste <- mkt_df %>% filter (grepl('omnitrade', symbol))
+teste$latest_trade <- as.Date(as.POSIXct(teste$latest_trade, origin="1970-01-01"))
+
+weighted_price <- teste$weighted_price
+weighted_price
+
+if (weighted_price > 35000){
+  print(paste("Valor venda atingido: R$",round(weighted_price,2),sep=""))
+  print(teste)
+  for(i in 1:5){
+    alarm()
+    Sys.sleep(0.5)
+  }
+  #break
+}
+if (weighted_price < 32000){
+  print(paste("Valor de compra atingido",weighted_price,sep=""))
+  print(teste)
+  for(i in 1:5){
+    alarm()
+    Sys.sleep(0.5)
+  }
+  break
+}
+
+}
 
 
 ## another
