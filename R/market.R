@@ -1,46 +1,36 @@
-
-
 nullToNA <- function(x) {
   x[sapply(x, is.null)] <- NA
   return(x)
 }
-
+install.packages("RJSONIO")
+library(RJSONIO)
 url_m <- "http://api.bitcoincharts.com/v1/markets.json"
 
-repeat{
-Sys.sleep(30)
-mkt_data <- fromJSON(url_m)
-#str(mkt_data)
-mkt_data2 <- lapply(mkt_data,nullToNA)
-mkt_df <- do.call(rbind,lapply(mkt_data2,data.frame,stringsAsFactors=FALSE))
-#head(mkt_df)
-
-teste <- mkt_df %>% filter (grepl('omnitrade', symbol))
-teste$latest_trade <- as.Date(as.POSIXct(teste$latest_trade, origin="1970-01-01"))
-
-weighted_price <- teste$weighted_price
-weighted_price
-
-if (weighted_price > 35000){
-  print(paste("Valor venda atingido: R$",round(weighted_price,2),sep=""))
-  print(teste)
-  for(i in 1:5){
-    alarm()
-    Sys.sleep(0.5)
+#repeat{
+  Sys.sleep(30)
+  mkt_data <- fromJSON(url_m)
+  #str(mkt_data)
+  mkt_data2 <- lapply(mkt_data,nullToNA)
+  mkt_df <- do.call(rbind,lapply(mkt_data2,data.frame,stringsAsFactors=FALSE))
+  #head(mkt_df)
+  
+  teste <- mkt_df %>% filter (grepl('omnitrade', symbol))
+  teste$latest_trade <- as.Date(as.POSIXct(teste$latest_trade, origin="1970-01-01"))
+  
+  weighted_price <- teste$weighted_price
+  weighted_price
+  
+  if (weighted_price > 35000){
+    print(paste("Valor venda atingido: R$",round(weighted_price,2),sep=""))
+    print(teste)
+    for(i in 1:5){
+      alarm()
+      Sys.sleep(0.5)
+    }
+    #break
   }
-  #break
-}
-if (weighted_price < 32000){
-  print(paste("Valor de compra atingido",weighted_price,sep=""))
-  print(teste)
-  for(i in 1:5){
-    alarm()
-    Sys.sleep(0.5)
-  }
-  break
-}
-
-}
+  
+#}
 
 
 ## another
@@ -77,9 +67,9 @@ rm(raw)
 data_ <- mutate(data_,value = price * amount)
 by_date <- group_by(data_,date)
 daily <- dplyr::summarise(by_date,count = dplyr::n(),
-                   m_price <-  mean(price, na.rm = TRUE),
-                   m_amount <- mean(amount, na.rm = TRUE),
-                   m_value <-  mean(value, na.rm = TRUE))
+                          m_price <-  mean(price, na.rm = TRUE),
+                          m_amount <- mean(amount, na.rm = TRUE),
+                          m_value <-  mean(value, na.rm = TRUE))
 
 names(daily) <- c("date","count","m_value","m_price","m_amount")
 head(daily,2)
@@ -89,10 +79,10 @@ daily_ts <- xts(daily$m_value,order.by=daily$date)
 tail(daily_ts)
 
 # Plot with htmlwidget dygraph
-dygraph(daily_ts,ylab="PreÃ§o(Dolar)", 
+dygraph(daily_ts,ylab="Preço(Dolar)", 
         main="Valor BTC - USD (Compras)") %>%
-        dySeries("V1",label="Compra") %>%
-        dyRangeSelector(dateWindow = c("2019-05-01","2020-01-20"))
+  dySeries("V1",label="Compra") %>%
+  dyRangeSelector(dateWindow = c("2019-05-01","2020-01-20"))
 
 
 
@@ -117,8 +107,8 @@ prediction_yhat <- xts(forecastprophet$yhat,order.by=forecastprophet$ds)
 
 tail(prediction_ts)
 
-# predicao com variavel yhat (fazer tambÃ©m com a trend)
-dygraph(prediction_yhat,ylab="PreÃ§o(Dolar)", 
+# predicao com variavel yhat (fazer também com a trend)
+dygraph(prediction_yhat,ylab="Preço(Dolar)", 
         main="Valor BTC - USD (Compras)") %>%
   dySeries("V1",label="Compra") %>%
   dyRangeSelector(dateWindow = c("2016-06-01","2020-02-19"))
