@@ -1,4 +1,4 @@
-#setwd("C:/felipe/")
+setwd("C:/felipe/")
 getwd()
 library (openxlsx)
 library(ggpubr)
@@ -7,7 +7,7 @@ library(tidyverse)
 library(dplyr)
 library(reshape)
 
-planilha <- read.xlsx ("d_lot.xlsx", sheet = "d_lot", startRow = 1, colNames = TRUE)
+planilha <- read.xlsx ("d_lotfac.xlsx", sheet = "d_lotfac", startRow = 1, colNames = TRUE)
 
 planilha <- planilha[complete.cases(planilha$Bola1),]
 str(planilha)
@@ -103,22 +103,12 @@ sapply(names(indicadores)[-1], function(x) {
 
 planilha <- merge(x = planilha, y = indicadores, by.x = "Concurso", by.y = "Concurso", all.x = TRUE)
 
-# analises:
-# ultimos 10:
-# nao lancar palpite que seja igual ao historico, pois o mesmo jogo nunca saiu e nunca sairá (observação inconclusiva, porém está funcionando até hoje)
-# lancar palpite observando os ultimos 10 registros, o palpite deve ser validado pelo maximo de minimo de pares, impares e primos 
-# observar se o ultimo registro tem pico (primo, par ou impar): 
-                                   #se o ultimo for normal, aumentar o range para chance de pico;
-                                   #se o ultimo for um pico, após este pico o proximo deverá ser normal.
-# realizar treino e teste com machine learning para induzir as jogadas que deram certo.
-
-
 graph_prime <- ggplot(data=planilha, aes(x=Concurso, y=qt_primes)) +
   geom_bar(stat="identity", fill="steelblue")+
   geom_text(aes(label=qt_primes), vjust=-0.3, size=3.5)+
   theme_minimal()
 
-graph_prime <- graph_prime + coord_cartesian(xlim=c(1750,1888))
+graph_prime <- graph_prime + coord_cartesian(xlim=c(1750,1925))
 graph_prime
 
 graph_odd <- ggplot(data=planilha, aes(x=Concurso, y=qt_odds)) +
@@ -126,7 +116,7 @@ graph_odd <- ggplot(data=planilha, aes(x=Concurso, y=qt_odds)) +
   geom_text(aes(label=qt_odds), vjust=-0.3, size=3.5)+
   theme_minimal()
 
-graph_odd <- graph_odd + coord_cartesian(xlim=c(1750,1888))
+graph_odd <- graph_odd + coord_cartesian(xlim=c(1750,1925))
 graph_odd
 
 graph_pair <- ggplot(data=planilha, aes(x=Concurso, y=qt_pairs)) +
@@ -134,7 +124,7 @@ graph_pair <- ggplot(data=planilha, aes(x=Concurso, y=qt_pairs)) +
   geom_text(aes(label=qt_pairs), vjust=-0.3, size=3.5)+
   theme_minimal()
 
-graph_pair <- graph_pair + coord_cartesian(xlim=c(1750,1888))
+graph_pair <- graph_pair + coord_cartesian(xlim=c(1750,1925))
 graph_pair
 
 
@@ -174,7 +164,7 @@ graph_soma <- ggplot(data=planilha, aes(x=Concurso, y=soma)) +
   geom_text(aes(label=soma), vjust=-0.3, size=3.5)+
   theme_minimal()
 
-graph_soma <- graph_soma + coord_cartesian(xlim=c(1800,1888))
+graph_soma <- graph_soma + coord_cartesian(xlim=c(1900,1925))
 graph_soma
 
 
@@ -183,7 +173,7 @@ graph_fibo <- ggplot(data=planilha, aes(x=Concurso, y=qt_fibo)) +
   geom_text(aes(label=qt_fibo), vjust=-0.3, size=3.5)+
   theme_minimal()
 
-graph_fibo <- graph_fibo + coord_cartesian(xlim=c(1800,1888))
+graph_fibo <- graph_fibo + coord_cartesian(xlim=c(1900,1925))
 graph_fibo
 
 
@@ -198,16 +188,11 @@ ggplot(data=df2, aes(x=dose, y=len, group=supp)) +
   geom_point(color="red", size=3)
 
 
-
-ggplot(indicadores, aes(x=Concurso)) + 
-  geom_line(aes(y = soma, colour = "soma")) +
-  coord_cartesian(xlim=c(1850,1888))
-
 # tendencia:
 #Na soma, existe uma tendencia mais visivel de alta ou baixa;
 ggplot(indicadores, aes(x=Concurso)) + 
   geom_line(aes(y = soma, colour = "soma")) +
-  coord_cartesian(xlim=c(1850,1888))
+  coord_cartesian(xlim=c(1900,1925))
 
 # os outros indicadores se isolam
 ggplot(indicadores, aes(x=Concurso)) + 
@@ -215,7 +200,7 @@ ggplot(indicadores, aes(x=Concurso)) +
   geom_line(aes(y = qt_odds, colour = "qt_odds")) +
   geom_line(aes(y = qt_primes, colour = "qt_primes")) +
   geom_line(aes(y = qt_fibo, colour = "qt_fibo")) +
-  coord_cartesian(xlim=c(1850,1888))
+  coord_cartesian(xlim=c(1900,1925))
 
 
 #organizando a tabela os jogos
@@ -227,10 +212,6 @@ for (row in 1:nrow(planilha)){
   planilha_ordernada <- rbind(planilha_ordernada,nada)
 }
 planilha_ordernada
-
-
-
-
 
 
 #--------------------------------------------
@@ -245,7 +226,6 @@ gen_lotto<-function(){
   return(w)
 }
 
-#################################
 
 verificar <-function(game){
   
@@ -284,48 +264,6 @@ verificar <-function(game){
 }
 
 
-lista_jogos <- data.frame()
-repeat {
-  tenta <- gen_lotto()
-  # se foi verificado nas regras
-  jogo_valido <- ifelse(verificar(tenta) == TRUE,as.data.frame(tenta),NA)
-  if (!is.na(jogo_valido)){
-    jogo_valido <- as.data.frame(jogo_valido)
-    jogo_valido <- t(jogo_valido)
-    jogo_valido <- as.data.frame(jogo_valido)
-    lista_jogos <- rbind(lista_jogos,jogo_valido)  
-  }
-  if (nrow(lista_jogos) == 10){
-    break
-  }
-}
-
-rownames(jogo_valido) <- "numeros"
-row.names(lista_jogos) <- NULL
-colnames(lista_jogos) <- c("Bola1","Bola2","Bola3","Bola4","Bola5","Bola6","Bola7","Bola8","Bola9","Bola10","Bola11","Bola12","Bola13","Bola14","Bola15")
-
-
-
-
-lista_jogos_melted <- melt(lista_jogos)
-planilha_ordernada_melted <- melt(planilha_ordernada)
-
-ggplot()+
-  geom_point(data=planilha_ordernada_melted, aes(x=variable,y = value),color="grey", size=2) +
-  geom_point(data=lista_jogos_melted, aes(x=variable,y = value),color="red", size=3)
-
-
-# nunca nenhum jogo saiu 2x... conferir novamente
-# criar fun��o que garanta isso
-verificar_historico 
-
-
-
-
-tenta <- gen_lotto()
-nada <- as.data.frame(t(tenta))
-colnames(nada) <- c("Bola1","Bola2","Bola3","Bola4","Bola5","Bola6","Bola7",
-                    "Bola8","Bola9","Bola10","Bola11","Bola12","Bola13","Bola14","Bola15")
 
 lista <- data.frame()
 for (row in 1:nrow(planilha)){
@@ -337,41 +275,14 @@ for (row in 1:nrow(planilha)){
   lista <- rbind(lista,nada)
 }
 
-lista
-#reordenar indice da lista
-rownames(lista) <- 1 : length(rownames(lista))
-verificacao <- data.frame()
-# verificar se ja existe na lista (mais de uma vez)
-for (row in 1:nrow(lista)){
-  
-  atual <- lista[row,1:15]
-  #print (atual)
-  outros <- lista %>% slice(-row)
-  #print (outros)
-  # verificacao se esta funcionando
-  outros <- atual
-  #verificacao <- rbind(verificacao,atual %in% outros)
-  for(i in atual %in% outros){
-    if(i == TRUE)
-      print('lista ja existe')
-    existe <- TRUE
-    break
-  }
-}
-
-head(atual)
-head(outros)
-tail(outros)
-
-head(lista)
-tail(lista)
-verificacao
 
 existe_historco <- function(pal){
   
   atual <- as.data.frame(pal)
+  atual <- as.data.frame(t(atual))
+  colnames(atual) <- c("Bola1","Bola2","Bola3","Bola4","Bola5","Bola6","Bola7",
+                      "Bola8","Bola9","Bola10","Bola11","Bola12","Bola13","Bola14","Bola15")
   existe <- FALSE
-  
   for(i in 1:nrow(lista)){
     if(all(atual == lista[i,]) == TRUE){
       print('lista ja existe')
@@ -383,11 +294,38 @@ existe_historco <- function(pal){
 }
 
 
-# se ja existe na lista
-existe_historco(nada)
+##
+## gerar 10 palpites baseado em historico e valida��es matem�ticas
+##
+lista_jogos <- data.frame()
+repeat {
+  tenta <- gen_lotto()
+  # se foi verificado nas regras
+  jogo_valido <- ifelse(verificar(tenta) == TRUE,as.data.frame(tenta),NA)
+  tem_hist<- existe_historco(tenta)
+  
+  if (!is.na(jogo_valido) & !tem_hist){
+    jogo_valido <- as.data.frame(jogo_valido)
+    jogo_valido <- t(jogo_valido)
+    jogo_valido <- as.data.frame(jogo_valido)
+    lista_jogos <- rbind(lista_jogos,jogo_valido)  
+  }
+  if (nrow(lista_jogos) == 10){
+    break
+  }
+}
 
-nada
-lista[row,1:15]
+row.names(lista_jogos) <- NULL
+colnames(lista_jogos) <- c("Bola1","Bola2","Bola3","Bola4","Bola5","Bola6","Bola7","Bola8","Bola9","Bola10","Bola11","Bola12","Bola13","Bola14","Bola15")
+
+
+#verificar se os jogos gerados estao dentro de um padrao aceitavel (visualmente)
+lista_jogos_melted <- melt(lista_jogos)
+planilha_ordernada_melted <- melt(planilha_ordernada)
+
+ggplot()+
+  geom_point(data=planilha_ordernada_melted, aes(x=variable,y = value),color="grey", size=2) +
+  geom_point(data=lista_jogos_melted, aes(x=variable,y = value),color="red", size=3)
 
 
 
@@ -398,6 +336,15 @@ last_10 <- planilha %>%
   left_join(lista) %>%
   head(10) %>%
   select (-Concurso)
+
+# analises:
+# ultimos 10:
+# nao lancar palpite que seja igual ao historico, pois o mesmo jogo nunca saiu e nunca sairá (observação inconclusiva, porém está funcionando até hoje)
+# lancar palpite observando os ultimos 10 registros, o palpite deve ser validado pelo maximo de minimo de pares, impares e primos 
+# observar se o ultimo registro tem pico (primo, par ou impar): 
+#se o ultimo for normal, aumentar o range para chance de pico;
+#se o ultimo for um pico, após este pico o proximo deverá ser normal.
+# realizar treino e teste com machine learning para induzir as jogadas que deram certo.
 
 #ultimos 10:
 #5 q mais sairam
@@ -410,4 +357,93 @@ last_10 <- planilha %>%
 # ultimo 1 compara com ultimos 10
 # se � mais alto comparado com a media ou mais baixo
 
+
+##============================================================================
+# prophet
+# predicao de valores baseado em historico (prothet)
+##============================================================================
+
+library(prophet)
+library(xts)
+
+# 1 - sem ordenacao
+lista <- planilha %>% select (Data.Sorteio,Bola1:Bola15)
+lista$Data.Sorteio <- convertToDate(lista$Data.Sorteio)
+lista$Data.Sorteio <- as.Date(as.POSIXct(lista$Data.Sorteio, origin="1970-01-01"))
+
+
+# 2 - com ordenacao das sequencias
+lista_ordenada <- data.frame()
+for (row in 1:nrow(planilha)){
+  game <- as.vector(planilha[row,3:17])
+  nada <- as.vector(game[order(game)])
+  colnames(nada) <- c("Bola1","Bola2","Bola3","Bola4","Bola5","Bola6","Bola7",
+                      "Bola8","Bola9","Bola10","Bola11","Bola12","Bola13","Bola14","Bola15")
+  nada <- as.data.frame(nada)
+  lista_ordenada <- rbind(lista_ordenada,nada)
+}
+
+# Add an index (numeric ID) column to a data frame
+lista_ordenada <- lista_ordenada %>% mutate(Concurso = row_number())
+lista_ordenada <- lista_ordenada %>% left_join(select(planilha,Concurso,Data.Sorteio))
+lista_ordenada$Data.Sorteio <- convertToDate(lista_ordenada$Data.Sorteio)
+lista_ordenada$Data.Sorteio <- as.Date(as.POSIXct(lista_ordenada$Data.Sorteio, origin="1970-01-01"))
+
+
+# PREVISAO DE TODOS OS 15
+#
+# loop entre colunas do df, criar um data frame com cada coluna
+
+predicao_custom <- function(lista_bola){
+  
+  colnames(lista_bola)[1] <- "Bola"
+  df_ts <- xts(lista_bola$Bola,order.by=lista_bola$Data.Sorteio)
+  
+  df <- data.frame(ds = index(df_ts),
+                   y = as.numeric(df_ts[,1]))
+  
+  #prophet model application
+  prophetpred <- prophet(df)
+  future <- make_future_dataframe(prophetpred, periods = 1)
+  
+  forecastprophet <- predict(prophetpred, future)
+  forecastprophet$yhat <- round(forecastprophet$yhat,digits=0)
+  
+  ball_pred <- forecastprophet %>% 
+    slice(n()) %>% 
+    select(yhat)
+  return(ball_pred)
+  
+}
+
+
+previsao_profeta <- data.frame()
+for(i in names(lista_ordenada %>% select(Bola1:Bola15))){
+  
+  ball_pred <- predicao_custom(assign(paste('df_',i,sep=''), lista_ordenada %>% select(i,Data.Sorteio)))
+  
+  previsao_profeta <- rbind(previsao_profeta,ball_pred)
+}
+
+
+previsao_profeta2 <- data.frame()
+for(i in names(lista %>% select(Bola1:Bola15))){
+  
+  ball_pred <- predicao_custom(assign(paste('df_',i,sep=''), lista %>% select(i,Data.Sorteio)))
+  
+  previsao_profeta2 <- rbind(previsao_profeta2,ball_pred)
+}
+
+previsao_profeta2 <- previsao_profeta2 %>% arrange(yhat)
+
+
+previsao_profeta
+previsao_profeta2
+
+palpite  <- unique(previsao_profeta)
+palpite2 <- unique(previsao_profeta2)
+palpites <- data.frame(t(palpite))
+palpites$X15 <- NA
+
+palpites <- bind_rows(palpites,data.frame(t(palpite2)))
 
