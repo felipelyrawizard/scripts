@@ -1,4 +1,4 @@
-setwd("C:/felipe/")
+setwd("D:/felipe/")
 getwd()
 library (openxlsx)
 library(ggpubr)
@@ -10,6 +10,7 @@ library(reshape)
 planilha <- read.xlsx ("d_lotfac.xlsx", sheet = "d_lotfac", startRow = 1, colNames = TRUE)
 
 planilha <- planilha[complete.cases(planilha$Bola1),]
+planilha$Data.Sorteio <- convertToDate(planilha$Data.Sorteio)
 str(planilha)
 
 freq <- data.frame()
@@ -108,7 +109,7 @@ graph_prime <- ggplot(data=planilha, aes(x=Concurso, y=qt_primes)) +
   geom_text(aes(label=qt_primes), vjust=-0.3, size=3.5)+
   theme_minimal()
 
-graph_prime <- graph_prime + coord_cartesian(xlim=c(1750,1925))
+graph_prime <- graph_prime + coord_cartesian(xlim=c(1750,1938))
 graph_prime
 
 graph_odd <- ggplot(data=planilha, aes(x=Concurso, y=qt_odds)) +
@@ -116,7 +117,7 @@ graph_odd <- ggplot(data=planilha, aes(x=Concurso, y=qt_odds)) +
   geom_text(aes(label=qt_odds), vjust=-0.3, size=3.5)+
   theme_minimal()
 
-graph_odd <- graph_odd + coord_cartesian(xlim=c(1750,1925))
+graph_odd <- graph_odd + coord_cartesian(xlim=c(1750,1938))
 graph_odd
 
 graph_pair <- ggplot(data=planilha, aes(x=Concurso, y=qt_pairs)) +
@@ -132,13 +133,6 @@ ggarrange(graph_prime,
           ggarrange(graph_odd, graph_pair, ncol = 2, labels = c("Odds", "Pairs")), 
           labels = c("Primes"),
           nrow = 2)
-
-
-
-
-colnames(planilha)
-planilha <- planilha %>%
-  select(-c(Arrecadacao_Total:Valor_Acumulado_Especial))
 
 #sum of numbers 
 planilha$soma <-     planilha$Bola1+
@@ -164,7 +158,7 @@ graph_soma <- ggplot(data=planilha, aes(x=Concurso, y=soma)) +
   geom_text(aes(label=soma), vjust=-0.3, size=3.5)+
   theme_minimal()
 
-graph_soma <- graph_soma + coord_cartesian(xlim=c(1900,1925))
+graph_soma <- graph_soma + coord_cartesian(xlim=c(1900,1944))
 graph_soma
 
 
@@ -173,34 +167,25 @@ graph_fibo <- ggplot(data=planilha, aes(x=Concurso, y=qt_fibo)) +
   geom_text(aes(label=qt_fibo), vjust=-0.3, size=3.5)+
   theme_minimal()
 
-graph_fibo <- graph_fibo + coord_cartesian(xlim=c(1900,1925))
+graph_fibo <- graph_fibo + coord_cartesian(xlim=c(1900,1944))
 graph_fibo
-
-
-# linha dos indicadores
-
-ggplot(data=indicadores, aes(x=Concurso, y=len, group=supp)) +
-  geom_line()+
-  geom_point()
-# Change line types
-ggplot(data=df2, aes(x=dose, y=len, group=supp)) +
-  geom_line(linetype="dashed", color="blue", size=1.2)+
-  geom_point(color="red", size=3)
 
 
 # tendencia:
 #Na soma, existe uma tendencia mais visivel de alta ou baixa;
 ggplot(indicadores, aes(x=Concurso)) + 
   geom_line(aes(y = soma, colour = "soma")) +
-  coord_cartesian(xlim=c(1900,1925))
+  coord_cartesian(xlim=c(1900,1944))
+
 
 # os outros indicadores se isolam
+# existe uma regra para cada um, é confuso achar um padrão
 ggplot(indicadores, aes(x=Concurso)) + 
   geom_line(aes(y = qt_pairs, colour = "qt_pairs")) + 
   geom_line(aes(y = qt_odds, colour = "qt_odds")) +
   geom_line(aes(y = qt_primes, colour = "qt_primes")) +
   geom_line(aes(y = qt_fibo, colour = "qt_fibo")) +
-  coord_cartesian(xlim=c(1900,1925))
+  coord_cartesian(xlim=c(1900,1944))
 
 
 #organizando a tabela os jogos
@@ -220,9 +205,12 @@ gen_lotto<-function(){
   probs<-balls
   # We need 15 whites
   w<-sample(balls,15,prob=probs)
+  w <- as.integer(unlist(w))
   w <- as.data.frame(w[order(w)])
+  
+  typeof(w)
   # Print results
-  print(w)
+  #print(w)
   return(w)
 }
 
@@ -253,16 +241,18 @@ verificar <-function(game){
     }
   }
   
-  # o jogo precisa ter entre 4 e 7 primos, sen�o est� fora (filtro)
+  # o jogo precisa ter entre 4 e 7 primos, senão está fora (filtro)
   # minimo de 5 pares
   # minimo de 5 impares
   # o jogo precisa ter entre 2 e 6 fibonacci, senao esta fora
   # o jogo precisa estar dentro da soma (170 a 220)
-  jogo_valido <- ifelse ((!pr %in% c(4:7))| (o<5) | (p<5) | (!fib %in% c(2:6)) | (!soma %in% c(170:220)) ,FALSE,TRUE)
+  jogo_valido <- ifelse ((pr %in% c(4:7))&
+                           (o>=5) &
+                           (p>=5) & 
+                           (fib %in% c(2:6)) &
+                           (soma %in% c(170:220)) ,TRUE,FALSE)
   return (jogo_valido)
-
 }
-
 
 
 lista <- data.frame()
@@ -275,7 +265,7 @@ for (row in 1:nrow(planilha)){
   lista <- rbind(lista,nada)
 }
 
-
+# se o jogo ja foi realizado em algum momento (historico)
 existe_historco <- function(pal){
   
   atual <- as.data.frame(pal)
@@ -283,6 +273,7 @@ existe_historco <- function(pal){
   colnames(atual) <- c("Bola1","Bola2","Bola3","Bola4","Bola5","Bola6","Bola7",
                       "Bola8","Bola9","Bola10","Bola11","Bola12","Bola13","Bola14","Bola15")
   existe <- FALSE
+  lista <- lista %>% select(Bola1:Bola15)
   for(i in 1:nrow(lista)){
     if(all(atual == lista[i,]) == TRUE){
       print('lista ja existe')
@@ -294,23 +285,198 @@ existe_historco <- function(pal){
 }
 
 
-##
-## gerar 10 palpites baseado em historico e valida��es matem�ticas
-##
+# criar função que calcula moda
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+#=================================================
+# analise por bola (analise de jogadas por bola):
+#=================================================
+
+# analise dos ultimos 20 jogos
+last_20 <- planilha_ordernada %>% 
+  select(Bola1:Bola15) %>%
+  tail(20)
+
+library(skimr)
+skim(last_20)
+summary(last_20)
+
+ggplot(last_20, aes(x=rownames(last_20),group = 1)) + 
+  geom_line(aes(y = Bola1)) +
+  geom_point(aes(y = Bola1)) +
+  geom_line(aes(y = getmode(Bola1)))
+
+
+# ultimos 10:
+# nao lancar palpite que seja igual ao historico, pois o mesmo jogo nunca saiu e nunca sairÃ¡ (observaÃ§Ã£o inconclusiva, porÃ©m estÃ¡ funcionando atÃ© hoje)
+# lancar palpite observando os ultimos 10 registros, o palpite deve ser validado pelo maximo de minimo de pares, impares e primos 
+# observar se o ultimo registro tem pico (primo, par ou impar): 
+# se o ultimo for normal, aumentar o range para chance de pico;
+# se o ultimo for um pico, apÃ³s este pico o proximo deverÃ¡ ser normal.
+# realizar treino e teste com machine learning para induzir as jogadas que deram certo.
+
+#ultimos 10:
+#5 q mais sairam
+#5 q não sairam ou sairam menos
+#soma, fibo, primos
+
+# ultimo 1
+#soma, fibo, primos
+
+# ultimo 1 compara com ultimos 10
+# se é mais alto comparado com a media ou mais baixo
+
+# analise de cada bola e cada range
+# ex.: bola 1: vai de 1 a 6
+range_bolas <- data.frame()
+range_bolas <- rbind(range_bolas,c('Bola1', min(planilha_ordernada$Bola1), max(planilha_ordernada$Bola1)))
+colnames(range_bolas) <- c("bola","minimo","maximo")
+
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola2', minimo=as.numeric(min(planilha_ordernada$Bola2)), maximo=as.numeric(max(planilha_ordernada$Bola2))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola3', minimo=as.numeric(min(planilha_ordernada$Bola3)), maximo=as.numeric(max(planilha_ordernada$Bola3))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola4', minimo=as.numeric(min(planilha_ordernada$Bola4)), maximo=as.numeric(max(planilha_ordernada$Bola4))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola5', minimo=as.numeric(min(planilha_ordernada$Bola5)), maximo=as.numeric(max(planilha_ordernada$Bola5))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola6', minimo=as.numeric(min(planilha_ordernada$Bola6)), maximo=as.numeric(max(planilha_ordernada$Bola6))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola7', minimo=as.numeric(min(planilha_ordernada$Bola7)), maximo=as.numeric(max(planilha_ordernada$Bola7))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola8', minimo=as.numeric(min(planilha_ordernada$Bola8)), maximo=as.numeric(max(planilha_ordernada$Bola8))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola9', minimo=as.numeric(min(planilha_ordernada$Bola9)), maximo=as.numeric(max(planilha_ordernada$Bola9))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola10', minimo=as.numeric(min(planilha_ordernada$Bola10)), maximo=as.numeric(max(planilha_ordernada$Bola10))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola11', minimo=as.numeric(min(planilha_ordernada$Bola11)), maximo=as.numeric(max(planilha_ordernada$Bola11))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola12', minimo=as.numeric(min(planilha_ordernada$Bola12)), maximo=as.numeric(max(planilha_ordernada$Bola12))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola13', minimo=as.numeric(min(planilha_ordernada$Bola13)), maximo=as.numeric(max(planilha_ordernada$Bola13))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola14', minimo=as.numeric(min(planilha_ordernada$Bola14)), maximo=as.numeric(max(planilha_ordernada$Bola14))))))
+range_bolas <- rbind(range_bolas,data.frame(t(c(bola='Bola15', minimo=as.numeric(min(planilha_ordernada$Bola15)), maximo=as.numeric(max(planilha_ordernada$Bola15))))))
+
+# fator para numero
+# fator tem que ir para character, dpois para numero
+range_bolas$minimo <- as.numeric(as.character(range_bolas$minimo)) 
+range_bolas$maximo <- as.numeric(as.character(range_bolas$maximo))
+
+# moda dos ultimos 10, 20 e 30 jogos
+range_bolas$moda <- NA
+for(i in names(planilha_ordernada %>% select(Bola1:Bola15))){
+  #You need to use [[, the programmatic equivalent of $
+  print(planilha_ordernada[[i]] %>% tail(10) %>% getmode())
+  range_bolas[as.numeric(substr(i,5,6)),]$moda <- planilha_ordernada[[i]] %>% tail(10) %>% getmode() 
+}
+
+
+range_bolas$moda20 <- NA
+for(i in names(planilha_ordernada %>% select(Bola1:Bola15))){
+  #You need to use [[, the programmatic equivalent of $
+  print(planilha_ordernada[[i]] %>% tail(20) %>% getmode())
+  range_bolas[as.numeric(substr(i,5,6)),]$moda20 <- planilha_ordernada[[i]] %>% tail(20) %>% getmode() 
+}
+
+range_bolas$moda30 <- NA
+for(i in names(planilha_ordernada %>% select(Bola1:Bola15))){
+  #You need to use [[, the programmatic equivalent of $
+  print(planilha_ordernada[[i]] %>% tail(30) %>% getmode())
+  range_bolas[as.numeric(substr(i,5,6)),]$moda30 <- planilha_ordernada[[i]] %>% tail(30) %>% getmode() 
+}
+
+# range de cada bola de todos os jogos + mediana das bolas dos ultimos 10 jogos
+ggplot(range_bolas, label=minimo) + 
+  geom_segment(aes(x=bola, 
+                   xend=bola, 
+                   y=minimo, 
+                   yend=maximo), 
+               size=3, color="orange") +
+  geom_text(aes(x=bola,y=minimo,label=minimo), position=position_dodge(width=0.9), vjust=1) +
+  geom_text(aes(x=bola,y=maximo,label=maximo), position=position_dodge(width=0.9), vjust=-0.25) +
+  geom_line(aes(x=bola, group = 1, y = moda, colour = "moda")) +
+  geom_line(aes(x=bola, group = 1, y = moda20, colour = "moda20")) +
+  geom_line(aes(x=bola, group = 1, y = moda30, colour = "moda30")) +
+  #geom_point(data=lista_jogos_melted, aes(x=variable,y = value),color="red", size=3)
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=90))
+
+  
+# ABAIXAR O MÁXIMO ATÉ A 7ª BOLA E AUMENTAR O MINIMO ATÉ DA 11ª A 15ª
+range_bolas$minimo_permitido <- range_bolas$minimo
+range_bolas$maximo_permitido <- range_bolas$maximo
+
+for(i in 1:nrow(range_bolas)){
+  if(i <= 7){
+    range_bolas$maximo_permitido[i] <- range_bolas$maximo[i] - 3
+  }
+  if(i>7&i<=9){
+    range_bolas$maximo_permitido[i] <- range_bolas$maximo[i] - 1
+    range_bolas$minimo_permitido[i] <- range_bolas$minimo[i] + 1
+  }
+  
+  if(i >= 10){
+    range_bolas$minimo_permitido[i] <- range_bolas$minimo[i] + 3
+  }
+}
+
+ggplot(range_bolas, label=minimo) + 
+  geom_segment(aes(x=bola, 
+                   xend=bola, 
+                   y=minimo, 
+                   yend=maximo), 
+               size=3, color="orange") +
+  geom_text(aes(x=bola,y=minimo,label=minimo), position=position_dodge(width=0.9), vjust=1) +
+  geom_text(aes(x=bola,y=maximo,label=maximo), position=position_dodge(width=0.9), vjust=-0.25) +
+  geom_line(aes(x=bola, group = 1, y = moda, colour = "moda")) +
+  geom_line(aes(x=bola, group = 1, y = moda20, colour = "moda20")) +
+  geom_line(aes(x=bola, group = 1, y = moda30, colour = "moda30")) +
+  geom_segment(aes(x=bola, 
+                   xend=bola, 
+                   y=minimo_permitido, 
+                   yend=maximo_permitido), 
+               size=3, color="red") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=90))
+
+
+# analise por bola: numero par, impar, primo, fibonati
+# futuro: analisar, de cada bola, se esta dentro das regras especificas e esta dentro da predição que vou definir
+range_bolas
+
+
+verificar_por_bola <-function(game){
+  game <- as.data.frame(game)
+  for(value in game){
+      # cada bola
+      for(j in 1:15){
+        # se esta entre o minimo e maximo permitido 
+        valido <- ifelse(value[j] >= range_bolas[j,7] & value[j] <= range_bolas[j,8],TRUE,FALSE)
+        #print(paste("testando bola n ",j," valor:",value[j],"","entre ",range_bolas[j,7]," e ",range_bolas[j,8],sep=""))
+        if (valido == FALSE){
+          break()
+          return(FALSE)
+        } 
+      }
+  }
+  return (TRUE)
+}
+
+##================================================================
+## gerar X palpites baseado em historico e validações matemáticas
+##================================================================
 lista_jogos <- data.frame()
 repeat {
-  tenta <- gen_lotto()
-  # se foi verificado nas regras
-  jogo_valido <- ifelse(verificar(tenta) == TRUE,as.data.frame(tenta),NA)
-  tem_hist<- existe_historco(tenta)
+  jogo_valido <- NA
+  while(is.na(jogo_valido)){
+    tenta <- gen_lotto()
+    # se foi verificado nas regras
+    jogo_valido <- ifelse(verificar(tenta) & verificar_por_bola(tenta),data.frame(tenta),NA)
+  }
   
-  if (!is.na(jogo_valido) & !tem_hist){
+  #se existe na lista de histórico (ja foi jogado)
+  tem_hist <- existe_historco(tenta)
+  
+  if (!tem_hist){
     jogo_valido <- as.data.frame(jogo_valido)
     jogo_valido <- t(jogo_valido)
     jogo_valido <- as.data.frame(jogo_valido)
     lista_jogos <- rbind(lista_jogos,jogo_valido)  
   }
-  if (nrow(lista_jogos) == 10){
+  if (nrow(lista_jogos) == 100){
     break
   }
 }
@@ -324,41 +490,10 @@ lista_jogos_melted <- melt(lista_jogos)
 planilha_ordernada_melted <- melt(planilha_ordernada)
 
 ggplot()+
-  geom_point(data=planilha_ordernada_melted, aes(x=variable,y = value),color="grey", size=2) +
+  geom_point(data=planilha_ordernada_melted, aes(x=variable,y = value),color="grey", size=2)+
   geom_point(data=lista_jogos_melted, aes(x=variable,y = value),color="red", size=3)
+  
 
-
-
-# the last 10
-last_10 <- planilha %>% 
-  select(Concurso,Bola1:Bola15) %>%
-  arrange(desc(Concurso)) %>%
-  left_join(lista) %>%
-  head(10) %>%
-  select (-Concurso)
-
-# analises:
-# ultimos 10:
-# nao lancar palpite que seja igual ao historico, pois o mesmo jogo nunca saiu e nunca sairá (observação inconclusiva, porém está funcionando até hoje)
-# lancar palpite observando os ultimos 10 registros, o palpite deve ser validado pelo maximo de minimo de pares, impares e primos 
-# observar se o ultimo registro tem pico (primo, par ou impar): 
-#se o ultimo for normal, aumentar o range para chance de pico;
-#se o ultimo for um pico, após este pico o proximo deverá ser normal.
-# realizar treino e teste com machine learning para induzir as jogadas que deram certo.
-
-#ultimos 10:
-#5 q mais sairam
-#5 q n�o sairam ou sairam menos
-#soma, fibo, primos
-
-# ultimo 1
-#soma, fibo, primos
-
-# ultimo 1 compara com ultimos 10
-# se � mais alto comparado com a media ou mais baixo
-
-
-##============================================================================
 # prophet
 # predicao de valores baseado em historico (prothet)
 ##============================================================================
@@ -447,3 +582,56 @@ palpites$X15 <- NA
 
 palpites <- bind_rows(palpites,data.frame(t(palpite2)))
 
+# organizando os palpites
+palpites[1,"X15"] <- 25
+palpites <- palpites[1,]
+
+lista_jogos <- rbind(lista_jogos,palpites)
+
+file <- "jogos_20200219.xlsx"
+write.xlsx(lista_jogos, file, sheetName = "Sheet1", 
+           col.names = TRUE, row.names = TRUE, append = FALSE)
+
+
+
+#=================================================================
+# poderia fazer rodar os jogos até dar o ultimo jogo que foi ganho (mas nao esta na planilha ainda)
+jackpot <- c(03,04,05,08,09,10,12,15,17,19,20,22,23,24,25)
+jackpot <- lista_jogos[5,]
+#verifica este jogo
+verificar(jackpot)
+verificar_por_bola(jackpot)
+existe_historco(jackpot)
+
+setwd("D:\\felipe\\")
+log_con <- file("test.log",open="a")
+close(log_con)
+
+i=0
+repeat {
+  i <- i+1
+    jogo_valido <- NA
+    while(is.na(jogo_valido)){
+      tenta <- gen_lotto()
+      # se foi verificado nas regras
+      jogo_valido <- ifelse(verificar(tenta) & verificar_por_bola(tenta),data.frame(tenta),NA)
+    }
+  
+    
+  if (!is.na(jogo_valido)){
+    jogo_valido <- as.data.frame(jogo_valido)
+    jogo_valido <- t(jogo_valido)
+    jogo_valido <- as.data.frame(jogo_valido)
+    row.names(jogo_valido) <- "game"
+    
+    #se e igual
+    if (!is.na(all(jogo_valido))){
+      print(jogo_valido)
+      #cat(as.character(jogo_valido), file = log_con, append = TRUE) # creates file and writes to it
+      if(all(jackpot == jogo_valido[]) == TRUE){
+        print(paste('=========================================achei na tentativa:',i))
+        break
+      }
+    }
+  }
+}
