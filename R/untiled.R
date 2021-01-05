@@ -635,3 +635,48 @@ repeat {
     }
   }
 }
+
+
+
+#
+# processo organico: construir aleatoriedade de bolas igual ocorre no sorteio
+#
+
+#install.packages("plotly")
+#install.packages("gapminder")
+library(plotly)
+library(gapminder)
+p <- gapminder %>%
+  plot_ly(
+    x = ~gdpPercap, 
+    y = ~lifeExp, 
+    size = ~pop, 
+    color = ~continent, 
+    frame = ~year, 
+    text = ~country, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  ) %>%
+  layout(
+    xaxis = list(
+      type = "log"
+    )
+  )
+p
+
+
+
+p <- indicadores %>%
+  plot_ly(
+    #x = ~,
+    y = ~qt_pairs, 
+    size = ~qt_pairs, 
+    #color = ~continent, 
+    frame = ~Concurso, 
+    #text = ~Bola1, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  ) 
+p
