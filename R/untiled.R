@@ -1,4 +1,4 @@
-setwd("D:/felipe/")
+setwd("C:/felipe/")
 getwd()
 library (openxlsx)
 library(ggpubr)
@@ -179,7 +179,7 @@ ggplot(indicadores, aes(x=Concurso)) +
 
 
 # os outros indicadores se isolam
-# existe uma regra para cada um, é confuso achar um padrão
+# existe uma regra para cada um, Ã© confuso achar um padrÃ£o
 ggplot(indicadores, aes(x=Concurso)) + 
   geom_line(aes(y = qt_pairs, colour = "qt_pairs")) + 
   geom_line(aes(y = qt_odds, colour = "qt_odds")) +
@@ -192,11 +192,14 @@ ggplot(indicadores, aes(x=Concurso)) +
 planilha_ordernada <- data.frame()
 for (row in 1:nrow(planilha)){
   game <- as.vector(planilha[row,3:17])
+  concurso <-planilha[row,1]
   nada <- as.vector(game[order(game)])
   colnames(nada) <- c("Bola1","Bola2","Bola3","Bola4","Bola5","Bola6","Bola7","Bola8","Bola9","Bola10","Bola11","Bola12","Bola13","Bola14","Bola15")
   planilha_ordernada <- rbind(planilha_ordernada,nada)
 }
 planilha_ordernada
+planilha_ordernada$Concurso <- rownames(planilha_ordernada)
+planilha_ordernada <- planilha_ordernada %>% select(Concurso,Bola1:Bola15)
 
 
 #--------------------------------------------
@@ -241,7 +244,7 @@ verificar <-function(game){
     }
   }
   
-  # o jogo precisa ter entre 4 e 7 primos, senão está fora (filtro)
+  # o jogo precisa ter entre 4 e 7 primos, senÃ£o estÃ¡ fora (filtro)
   # minimo de 5 pares
   # minimo de 5 impares
   # o jogo precisa ter entre 2 e 6 fibonacci, senao esta fora
@@ -285,7 +288,7 @@ existe_historco <- function(pal){
 }
 
 
-# criar função que calcula moda
+# criar funÃ§Ã£o que calcula moda
 getmode <- function(v) {
   uniqv <- unique(v)
   uniqv[which.max(tabulate(match(v, uniqv)))]
@@ -311,23 +314,23 @@ ggplot(last_20, aes(x=rownames(last_20),group = 1)) +
 
 
 # ultimos 10:
-# nao lancar palpite que seja igual ao historico, pois o mesmo jogo nunca saiu e nunca sairÃ¡ (observaÃ§Ã£o inconclusiva, porÃ©m estÃ¡ funcionando atÃ© hoje)
+# nao lancar palpite que seja igual ao historico, pois o mesmo jogo nunca saiu e nunca sairÃÂ¡ (observaÃÂ§ÃÂ£o inconclusiva, porÃÂ©m estÃÂ¡ funcionando atÃÂ© hoje)
 # lancar palpite observando os ultimos 10 registros, o palpite deve ser validado pelo maximo de minimo de pares, impares e primos 
 # observar se o ultimo registro tem pico (primo, par ou impar): 
 # se o ultimo for normal, aumentar o range para chance de pico;
-# se o ultimo for um pico, apÃ³s este pico o proximo deverÃ¡ ser normal.
+# se o ultimo for um pico, apÃÂ³s este pico o proximo deverÃÂ¡ ser normal.
 # realizar treino e teste com machine learning para induzir as jogadas que deram certo.
 
 #ultimos 10:
 #5 q mais sairam
-#5 q não sairam ou sairam menos
+#5 q nÃ£o sairam ou sairam menos
 #soma, fibo, primos
 
 # ultimo 1
 #soma, fibo, primos
 
 # ultimo 1 compara com ultimos 10
-# se é mais alto comparado com a media ou mais baixo
+# se Ã© mais alto comparado com a media ou mais baixo
 
 # analise de cada bola e cada range
 # ex.: bola 1: vai de 1 a 6
@@ -395,7 +398,7 @@ ggplot(range_bolas, label=minimo) +
   theme(axis.text.x=element_text(angle=90))
 
   
-# ABAIXAR O MÁXIMO ATÉ A 7ª BOLA E AUMENTAR O MINIMO ATÉ DA 11ª A 15ª
+# ABAIXAR O MÃXIMO ATÃ A 7Âª BOLA E AUMENTAR O MINIMO ATÃ DA 11Âª A 15Âª
 range_bolas$minimo_permitido <- range_bolas$minimo
 range_bolas$maximo_permitido <- range_bolas$maximo
 
@@ -434,7 +437,7 @@ ggplot(range_bolas, label=minimo) +
 
 
 # analise por bola: numero par, impar, primo, fibonati
-# futuro: analisar, de cada bola, se esta dentro das regras especificas e esta dentro da predição que vou definir
+# futuro: analisar, de cada bola, se esta dentro das regras especificas e esta dentro da prediÃ§Ã£o que vou definir
 range_bolas
 
 
@@ -456,7 +459,7 @@ verificar_por_bola <-function(game){
 }
 
 ##================================================================
-## gerar X palpites baseado em historico e validações matemáticas
+## gerar X palpites baseado em historico e validaÃ§Ãµes matemÃ¡ticas
 ##================================================================
 lista_jogos <- data.frame()
 repeat {
@@ -467,7 +470,7 @@ repeat {
     jogo_valido <- ifelse(verificar(tenta) & verificar_por_bola(tenta),data.frame(tenta),NA)
   }
   
-  #se existe na lista de histórico (ja foi jogado)
+  #se existe na lista de histÃ³rico (ja foi jogado)
   tem_hist <- existe_historco(tenta)
   
   if (!tem_hist){
@@ -595,7 +598,7 @@ write.xlsx(lista_jogos, file, sheetName = "Sheet1",
 
 
 #=================================================================
-# poderia fazer rodar os jogos até dar o ultimo jogo que foi ganho (mas nao esta na planilha ainda)
+# poderia fazer rodar os jogos atÃ© dar o ultimo jogo que foi ganho (mas nao esta na planilha ainda)
 jackpot <- c(03,04,05,08,09,10,12,15,17,19,20,22,23,24,25)
 jackpot <- lista_jogos[5,]
 #verifica este jogo
@@ -637,15 +640,17 @@ repeat {
 }
 
 
-
 #
 # processo organico: construir aleatoriedade de bolas igual ocorre no sorteio
 #
 
+
+
 #install.packages("plotly")
 #install.packages("gapminder")
-library(plotly)
+library(?plotly)
 library(gapminder)
+
 p <- gapminder %>%
   plot_ly(
     x = ~gdpPercap, 
@@ -665,18 +670,27 @@ p <- gapminder %>%
   )
 p
 
+transposicao <- tibble()
+for (row in 1:15){
+  tabela <- planilha_ordernada %>% mutate(Bola=row) %>% select(Bola,Concurso,Valor=paste0("Bola",row)) 
+  transposicao <- rbind(transposicao,tabela)
+}
+str(transposicao)
+transposicao$Concurso <- as.numeric(transposicao$Concurso)
 
-
-p <- indicadores %>%
+p <- transposicao %>%
   plot_ly(
-    #x = ~,
-    y = ~qt_pairs, 
-    size = ~qt_pairs, 
+    x = ~Bola,
+    y = ~Valor, 
+    size = ~Valor, 
     #color = ~continent, 
     frame = ~Concurso, 
-    #text = ~Bola1, 
+    text = ~Valor, 
     hoverinfo = "text",
     type = 'scatter',
     mode = 'markers'
   ) 
 p
+
+
+htmlwidgets::saveWidget(as_widget(p), "index.html")
